@@ -1,3 +1,2 @@
-set FLASK_APP=app.py
-set FLASK_env=development
-
+ FLASK_APP=app.py
+ FLASK_ENV=development
