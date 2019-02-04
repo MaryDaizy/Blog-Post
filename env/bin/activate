@@ -37,7 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/home/daisy/Desktop/daisy_try/Blog-Post/env"
+VIRTUAL_ENV="/home/daisy/Desktop/daisy_blog/Blog-Post/env"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
