@@ -2,10 +2,11 @@ import os
 import secrets
 from PIL import Image
 from flask import render_template, url_for, flash, redirect, request, abort
-from flaskblog import app, db, bcrypt
-from flaskblog.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm, RequestResetForm, ResetPasswordForm
+from flaskblog import app, db, bcrypt, mail
+from flaskblog.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm, RequestResetForm, ResetPasswordFrom
 from flaskblog.models import User, Post
 from flask_login import login_user, current_user, logout_user, login_required
+from flask_mail import Message
 
 
 @app.route('/')
@@ -154,13 +155,20 @@ def user_posts(username):
 
 
 def send_reset_email(user):
-    pass
+    token = user.get_reset_token()
+    msg = message('Password Reset Request', sender= 'noreply@demo.com', recipients =[user.email])
+    msg.body = f'''  To reset your password, visit the following link:
+{url_for('reset_token', token=token, _external=True)}
+
+
+if you did not make this request then simply ignore this mail and no change will be made.
+'''
 
 @app.route("/reset_password", methods=['GET', 'POST'])
 def reset_request():
     if  current_user.is_authenticated:
         return redirect(url_for('home'))
-    from = RequestResetForm()
+    form = RequestResetForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email = form.email.data).first()
         send_reset_email(user)
@@ -178,4 +186,10 @@ def reset_token(token):
         flash('That is an invalid or expired token', 'warning')
         return redirect(url_for('reset_password'))
     form = ResetPasswordForm()
+    if form.validate_on_submit():
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')        
+        user.password = hashed_password
+        db.session.commit()
+        flash('Your password has been updated! you are now able to log in', 'success')
+        return redirect(url_for('login'))
     return render_template('reset_token.html', title ='Reset password', form=form)    
